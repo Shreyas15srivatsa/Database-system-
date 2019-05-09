@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Table 5.0</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <!-- CSS Styling -->
+    <style>
+
+
+        #search{
+            width:400px;
+            margin-bottom: 10px;
+        }
+        #search_btn{
+            float:left;
+            margin-right:10px;
+            padding-right: 5px;
+            margin-left:10px;
+        }
+
+        #field{
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+        #sort{
+            margin-right: 10px;
+        }
+
+        p{
+            margin-left: 10px;
+
+        }
+
+
+    </style>
+
+    <!-- This is the Javascript function for form validation -->
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+
+                $('button.action').click(function(){
+
+                   let action =  $(this).attr('id');
+
+                    $('input#action').val(action);
+
+                    let isValid = true;
+
+                    $('form#form .required').each(function(){
+
+                        if($(this).val() === ''){
+
+                            if(isValid){ isValid = false; }
+
+                            $(this).addClass('border-danger');
+
+                        }
+
+                    });
+                    if(isValid){
+                        $('form#form').submit();
+                    }
+                });
+        });
+    </script>
+
+</head>
+<body>
+<div class="jumbotron">
+    <h2 class="display-4">Hello!</h2>
+    <p class="lead">This is a simple database system that runs on PHP and the SQL Database.</p>
+    <hr class="my-4">
+    <p>It includes features such as searching, adding, updating, deleting entries.</p>
+
+    <hr />
+    <?php
+
+    require_once '../includes/constants.php';
+    require_once '../includes/query.php';
+
+    $num_entries=0;
+    // If manage button is clicked
+    if(isset($_GET['id'])) {
+        $query = new QUERY(array('TABLE' => 'users', 'KEY' => ['id' => $_GET['id']]));
+        $selected_user = $query->fetchRow();
+        $super = $query->fetch('status');
+        $user_id=$query->fetch('id');
+        $username=$query->fetch('user');
+        $password=$query->fetch('pass');
+        if (isset($_POST['delete'])){
+            $query = new QUERY(array('TABLE' => 'users', 'KEY' => array('id' => $_GET['id'])));
+            echo ("The entry deleted was of ID = ") . $_GET['id'];
+            $query->delete();
+        }
+        if (isset($_POST['action'])&& $_POST['action']=='add'){
+            $q = new QUERY(['TABLE' => 'users']);
+            $data = ['user' => $_POST['user'], 'pass' => 'some unknown password', 'role' => $_POST['role'], 'user_group_id' => '1', 'pin' => '0000'];
+            $q->save($data);
+        }
+        if (isset($_POST['action'])&& $_POST['action']=='update'){
+            $query = new QUERY(array('TABLE' => 'users', 'KEY' => ['id' => $_GET['id']]));
+            $data = array('role' => $_POST['role'],'status'=>$_POST['select']);
+            $query->save($data);
+        }
+    }
+
+    // if sort is clicked
+    if(isset($_POST['sort'])){
+        if(isset($_POST['sort_drp'])){
+            if($_POST['sort_drp']=='1'){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'id::ASC'));
+            }
+            else if($_POST['sort_drp']=='2'){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'id::DESC'));
+            }
+            else if($_POST['sort_drp']==3){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'user::ASC'));
+            }
+            else if($_POST['sort_drp']==4){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'user::DESC'));
+            }
+            else if($_POST['sort_drp']==5){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'pass::ASC'));
+            }
+            else if($_POST['sort_drp']==6){
+                $q = new QUERY(array('TABLE' => 'users', 'KEY' =>1,'ORDER'=>'pass::DESC'));
+            }
+        }
+    }
+// If search is clicked
+    else if (isset($_POST['search'])) {
+        $subkey= "OR user LIKE '%".$_POST['search_form'] . "%'";
+        // $subkey= ['CLAUSE'=>"OR user = :user OR role = :role",'PARAM'=>['user'=>$_POST['search_form'],'role'=>$_POST['search_form']]];
+        $q = new QUERY(array('TABLE' => 'users', 'KEY' => ['id' => $_POST['search_form']], 'SUB_KEY'=>$subkey));
+        //echo $q->showLastQuery();
+        $num_entries= $q->numRows();
+    }
+    else{
+        $q = new QUERY(['TABLE' => 'users', 'KEY' => 1]);
+    }
+
+    $allUsers = $q->fetchAll();
+
+    ?>
+    <div class="container">
+
+        <div>
+            <form method="post" id="form" name="form">
+
+                <div class="row">
+                    <div class="col-6">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Email</label>
+                        <input type="text" class="required form-control" name="user" id="user" value="<?=isset($selected_user)?$selected_user['user']:''?>">
+                    </div>
+                    <div class="col-3">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Role</label>
+
+                        <input type="text"  id="role" class="required form-control" name="role" value="<?=isset($selected_user)?$selected_user['role']:''?>">
+                    </div>
+
+                    <div class="col-sm-3">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Password</label>
+                        <input type="text"  class="required form-control" name="password" id="password" value="<?=isset($selected_user)?$selected_user['pass']:''?>">
+                    </div>
+                </div>
+
+                <div class="row">
+
+
+
+
+                    <div class="col-sm-4">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">ID</label>
+                        <input type="text" class="required form-control" name="group_id" id="group_id" value="<?=isset($selected_user)?$selected_user['user_group_id']:''?>">
+                    </div>
+
+                    <div class="col-sm-4">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">PIN</label>
+                        <input type="text"  class="required form-control" name="pin" id="pin" value="<?=isset($selected_user)?$selected_user['pin']:''?>">
+                    </div>
+
+
+                </div>
+                <br/>
+                <label>Select status</label>
+                <select  name="select">
+                    <option value = "0" <?= isset($super)&& $super==0?'selected':'' ?> >0</option>
+                    <option value = "1" <?= isset($super)&& $super==1?'selected':'' ?> >1</option>
+                </select>
+                <br />
+
+                <input type="text" id="action" name="action" value="0" style="visibility: hidden" />
+
+                <div class="row">
+                    <div class="col-sm-6">
+
+                            <button type="button" name="add" id="add" class="btn btn-success action">Add</button>
+                            <button type="button" name="update" id="update" class="btn btn-warning action">Update</button>
+                            <button type="submit" name="delete" id="delete" class="btn btn-danger">Delete</button>
+                           <!-- <button type="button" name="test" id="test" class="btn btn-danger">Test Validate</button> -->
+
+                     </div>
+                </div>
+                <br/>
+
+            </form>
+        </div>
+
+    <form method = "post" name="searchform" >
+        <div class="input-group">
+            <input class="form-control required" id="search" type="text" placeholder="Keyword" aria-label="Search" name="search_form">
+            <span class="input-group-btn">
+                <button class="btn btn-success" type="submit" name="search" id="search_btn">Click to search</button>
+            </span>
+        </div>
+    </form>
+
+    <form method = "post">
+        <div class="input-group">
+            <select name="sort_drp" id="sort">
+                <option value = "1" name="id_asc">User ID Ascending </option>
+                <option value = "2" name="id_desc">User ID Descending</option>
+                <option value = "3" name="user_asc">Username Ascending</option>
+                <option value = "4" name="user_desc">Username Descending</option>
+                <option value = "5" name="pass_asc">Password Ascending</option>
+                <option value = "6" name="pass_desc">Password Descending</option>
+            </select>
+            <span class="input-group-btn">
+                 <button class="btn btn-success" type="submit" name="sort" id="sort_btn">Click to sort</button>
+            </span>
+
+        </div>
+    </form>
+
+        <hr />
+        <p>ENTRIES : <?= $num_entries ?></p>
+        <table class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">USER ID</th>
+                <th scope="col">USER</th>
+                <th scope="col">ROLE</th>
+                <th scope="col">PASSWORD</th>
+                <th scope="col">USER GROUP ID</th>
+                <th scope="col">PIN</th>
+                <th scope="col">STATUS</th>
+                <th scope="col">ACTION</th>
+
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+
+            if(!empty($allUsers)){
+                foreach ($allUsers as $user)
+                {
+                    ?>
+                    <tr>
+                        <td><?=$user['id']?></td>
+                        <td><?=$user['user']?></td>
+                        <td><?=$user['role']?></td>
+                        <td><?=$user['pass']?></td>
+                        <td><?=$user['user_group_id']?></td>
+                        <td><?=$user['pin']?></td>
+                        <td><?=$user['status']?></td>
+
+
+
+                        <td>
+                            <a href="something5_0.php?id=<?=$user['id']?>" class="btn btn-info">Manage</a>
+
+                        </td>
+                        <td>
+                            <!--<div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="defaultCheck1" id="defaultCheck1" name="checkbox">
+                                <label class="form-check-label" for="defaultCheck1">
+                                </label> -->
+                            <!--<input type="checkbox" name="chkbox" id="site1" onclick="location.href='something4_0.php?id=<?=$user['id']?>'">
+                        </td> -->
+                    </tr>
+                    <?php
+                }
+            }else{
+
+
+                echo "NO RESULT FOUND";
+            }
+            ?>
+
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
