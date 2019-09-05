@@ -1,4 +1,4 @@
-# Database-system-
+# Employee Management System
 
 Developed a simple database management system using PHP, SQL, JavaScript, jQuery, AJAX, HTML5 & CSS3. 
 The user has options of searching, adding, updating, deleting entries in the database. 
