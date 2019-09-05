@@ -1,8 +1,9 @@
 # Employee Management System
 
-Developed a simple database management system using PHP, SQL, JavaScript, jQuery, AJAX, HTML5 & CSS3. 
-The user has options of searching, adding, updating, deleting entries in the database. 
-The backend interaction with the database uses PHP and SQL while the front end is done using HTML, CSS and JavaScript.
+- Developed a full stack relational database management system hosted on a local Apache XAMPP server
+- Designed a login page utilizing the $_POST HTTP protocol and PHP sessions
+- The user has options of searching, adding, updating, deleting employees in the database. 
+- Used Open Source PDO wrapper class in PHP to interact with the DB and process data with a front-end built with HTML, Bootstrap, & jQuery to display the data in a user friendly UI
 
 ### Used Open Source Query Class :https://github.com/elymentree/query
 
