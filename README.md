@@ -1,4 +1,4 @@
-# Employee Management System
+# Employee Management System - A full stack RDBMS prototype
 
 - Developed a full stack relational database management system hosted on a local Apache XAMPP server
 - Designed a login page utilizing the $_POST HTTP protocol and PHP sessions
