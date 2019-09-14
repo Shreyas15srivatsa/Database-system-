@@ -14,20 +14,13 @@ if (!isset($_SESSION)): session_start(); endif;
     include('includes/constants.php');
     include('includes/query.php');
 
-    // INCLUDE FA
-    include_fa();
-    // INCLUDE JQUERY
-    include_jquery();
-    // INCLUDE BOOTSTRAP 4
-    include_bootstap(true,4);
-
     $rem = isset($_POST['remember'])?true:false;
 
     $error = 0;
     if(isset($_POST['submit'])){
 
-        $key = (isset($_POST['password']) && $_POST['password']==SUPER_PASS)? ['user'=>trim($_POST['username'])] : ['user'=>trim($_POST['username']),'pass'=>trim($_POST['password'])];
-        $qLogin = new QUERY(['TABLE'=>'users','KEY'=>$key]);
+        $key = (isset($_POST['password'])? ['user'=>trim($_POST['username'])] : ['user'=>trim($_POST['username']),'pass'=>trim($_POST['password'])];
+        $qLogin = new QUERY(['TABLE'=>'employees','KEY'=>$key]);
 
         if($qLogin->numRows()>0){
 
@@ -142,131 +135,7 @@ if (!isset($_SESSION)): session_start(); endif;
     </style>
 
     <script>
-
-        var path  = '';
-        var numberOfImg = 0;
-        var timer = null;
-        var imgNumber = 0;
-
-        $(function(){
-
-            var rem_me_users2 = $('#rem_me_users').val().split(", ");
-            var user_pick2 = $('#username').val();
-            var bool2 = false;
-
-            rem_me_users2.forEach(function(item){
-                if(item == user_pick2) {
-                    bool2 = true;
-                    $('#rem_me').css('display', 'block');
-                }
-            });
-
-            if(bool2==false){
-                $('#rem_me').css('display', 'none');
-            }
-
-            path = jQuery.parseJSON($('input#flash-msgs').val());
-            numberOfImg = path.length;
-            console.log(path[1]['message']);
-
-            $('#flash-msg').html(path[imgNumber]['message']);
-
-            if(path[imgNumber]['link']){
-                $('#link').css("display", "inline");
-                $('#link').attr('href', path[imgNumber]['link']);
-            }else{
-                $('#link').css("display", "none");
-            }
-            setTimer();
-
-            $(".transition").click(function(){
-                var dir = $(this).data('dir');
-                if(dir === "prev"){
-                    --imgNumber;
-                    if (imgNumber < 0) {
-                        imgNumber = numberOfImg - 1;
-                    }
-                    $('#flash-msg').html(path[imgNumber]['message']);
-                    if(path[imgNumber]['link']){
-                        $('#link').css("display", "inline");
-                        $('#link').attr('href', path[imgNumber]['link']);
-                    }else{
-                        $('#link').css("display", "none");
-                    }
-
-                    return false;
-                }else{
-                    ++imgNumber;
-                    if (imgNumber > (numberOfImg - 1)) {
-                        imgNumber = 0;
-                    }
-                    $('#flash-msg').html(path[imgNumber]['message']);
-                    if(path[imgNumber]['link']){
-                        $('#link').css("display", "inline");
-                        $('#link').attr('href', path[imgNumber]['link']);
-                    }else{
-                        $('#link').css("display", "none");
-                    }
-                    console.log(path[imgNumber]);
-                    return false;
-                }
-            });
-
-            $('#username').change(function(){
-                //get the array of users
-                var rem_me_users = $('#rem_me_users').val().split(", ");
-
-                //get the user's pick
-                var user_pick = $(this).val();
-
-                //create booleanto keep tracl of the checkbox
-                var bool = false;
-
-                //go throught the array of users and compare them to the user's pick
-                rem_me_users.forEach(function(item){
-
-                    //if the user's pick matches an item in the database then display the checkbox
-                    if(item == user_pick) {
-                        bool = true;
-                        $('#rem_me').css('display', 'block');
-                    }
-                });
-
-                //if no matches were found do not display the checkbox
-                if(bool==false){
-                    $('#rem_me').css('display', 'none');
-                }
-
-            })
-        });
-
-        function slide() {
-            imgNumber = (imgNumber + 1) % path.length;
-            $('#flash-msg').html(path[imgNumber]['message']);
-
-            if(path[imgNumber]['link']){
-                $('#link').css("display", "inline");
-                $('#link').attr('href', path[imgNumber]['link']);
-            }else{
-                $('#link').css("display", "none");
-            }
-        }
-
-        function setTimer() {
-
-            $('#pause').find('i').toggleClass("fa fa-play fa fa-pause");
-
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            } else {
-                timer = setInterval(slide, 3000);
-            }
-            return false;
-        }
-
-
-
+   
         function validateEmail(email) {
             var re = /\S+@\S+\.\S+/;
             return re.test(email);
@@ -280,11 +149,11 @@ if (!isset($_SESSION)): session_start(); endif;
                 alert(username + "is not a valid email address");
                 valid_email = false;
             }
-            //return false;
+           
             if(valid_email) {
                 $.ajax({
                     type: "POST",
-                    url: 'db/forgot_password.php',
+                    url: 'forgot_password.php',
                     data: {username: username},
                     success: function (responseTxt) {
                         if(responseTxt==='1'){
@@ -318,8 +187,8 @@ if (!isset($_SESSION)): session_start(); endif;
                         <option selected>Select Username</option>
 
                         <?php
-                        $localIP = getHostByName(getHostName()); // Get local host name
-                        $qUsers = new QUERY(['TABLE'=>'users','KEY'=>['status'=>1],'ORDER'=>'user','COLS'=>['id','user','status','host_name']]); ?>
+                        
+                        $qUsers = new QUERY(['TABLE'=>'employees','KEY'=>['status'=>1],'ORDER'=>'user','COLS'=>['id','user','status']]); ?>
                         <?php foreach($qUsers->fetchAll() as $user){ $user['id'] == $_COOKIE['uid'] ?>
 
                             <?php
@@ -327,7 +196,7 @@ if (!isset($_SESSION)): session_start(); endif;
                             $selected = (getenv('SERVER_ENV') == 'DEVELOPMENT')?($user['user']=='shreyas'?'selected':'') : ((isset($_COOKIE['uid']) && $_COOKIE['uid'] == $user['id']) ? 'selected' : '');
 
                             ?>
-                             <option value="<?=$user['user']?>" <?=$selected?>><?=extract_email_name($user['user'])?></option>
+                             <option value="<?=$user['user']?>" <?=$selected?>><?=$user['user']?></option>
 
                             <?php  } ?>
 
